@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guess the Clock Time</title>
+  <title>Saati tahmin et</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -123,17 +123,17 @@
   </div>
 
   <div class="level-select">
-    <label for="level">Choose Level:</label>
+    <label for="level">Seviyeyi seç:</label>
     <select id="level">
-      <option value="1">Level 1 – Full Hours</option>
-      <option value="2">Level 2 – Half Hours</option>
-      <option value="3">Level 3 – Quarters and Others</option>
+      <option value="1">1. Seviye – Tam saatler</option>
+      <option value="2">Level 2 – Buçuk</option>
+      <option value="3">Level 3 – Çeyrek</option>
     </select>
   </div>
 
   <div class="buttons">
-    <button id="checkBtn" onclick="checkGuess()" disabled>Check</button>
-    <button id="playBtn" onclick="togglePlay()">PLAY</button>
+    <button id="checkBtn" onclick="checkGuess()" disabled>Kontrol Et</button>
+    <button id="playBtn" onclick="togglePlay()">OYNA</button>
   </div>
 
   <div class="message" id="message"></div>
@@ -229,7 +229,7 @@
 
     function togglePlay() {
       isPlaying = !isPlaying;
-      playBtn.textContent = isPlaying ? 'STOP' : 'PLAY';
+      playBtn.textContent = isPlaying ? 'DUR' : 'OYNA';
       playBtn.classList.toggle('active', isPlaying);
 
       if (isPlaying) {
