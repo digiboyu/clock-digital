@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guess the Clock Time</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f0f8ff;
+      margin: 0;
+    }
+    .clock {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      border: 10px solid #333;
+      border-radius: 50%;
+      background: white;
+      transition: background 0.3s ease;
+    }
+    .number {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      line-height: 40px;
+      font-weight: bold;
+      font-size: 1.4em;
+      border-radius: 50%;
+      background: skyblue;
+      cursor: default;
+      user-select: none;
+    }
+    .hand {
+      position: absolute;
+      width: 6px;
+      top: 50%;
+      left: 50%;
+      transform-origin: bottom;
+    }
+    .hour-hand {
+      height: 70px;
+      background: red;
+    }
+    .minute-hand {
+      height: 100px;
+      background: orange;
+    }
+    .input-time {
+      margin-top: 20px;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .input-time input {
+      width: 50px;
+      padding: 8px;
+      font-size: 1em;
+      text-align: center;
+      border-radius: 8px;
+      border: 2px solid #00bfff;
+    }
+    .input-time span {
+      font-size: 1.2em;
+    }
+    .level-select {
+      margin-top: 15px;
+    }
+    #level {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: 2px solid #00bfff;
+      background-color: white;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    #checkBtn,
+    #playBtn {
+      padding: 12px 24px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #checkBtn {
+      background-color: skyblue;
+    }
+    #checkBtn:hover {
+      background-color: deepskyblue;
+    }
+    #playBtn {
+      background-color: limegreen;
+      color: white;
+    }
+    #playBtn.active {
+      background-color: orange;
+    }
+    .message {
+      margin-top: 15px;
+      font-size: 1.3em;
+    }
+  </style>
+</head>
+<body>
+  <div class="clock" id="clock"></div>
+
+  <div class="input-time">
+    <input type="number" id="hourInput" min="1" max="12" disabled />
+    <span>:</span>
+    <input type="number" id="minuteInput" min="0" max="59" step="1" disabled />
+  </div>
+
+  <div class="level-select">
+    <label for="level">Choose Level:</label>
+    <select id="level">
+      <option value="1">Level 1 – Full Hours</option>
+      <option value="2">Level 2 – Half Hours</option>
+      <option value="3">Level 3 – Quarters and Others</option>
+    </select>
+  </div>
+
+  <div class="buttons">
+    <button id="checkBtn" onclick="checkGuess()" disabled>Check</button>
+    <button id="playBtn" onclick="togglePlay()">PLAY</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <script>
+    const clock = document.getElementById('clock');
+    const hourInput = document.getElementById('hourInput');
+    const minuteInput = document.getElementById('minuteInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const playBtn = document.getElementById('playBtn');
+    const message = document.getElementById('message');
+    const levelSelect = document.getElementById('level');
+
+    let hourHand, minuteHand;
+    let targetHour = 0;
+    let targetMinute = 0;
+    let isPlaying = false;
+
+    function createClockFace() {
+      for (let i = 1; i <= 12; i++) {
+        const angle = (i * 30 - 90) * (Math.PI / 180);
+        const x = 150 + Math.cos(angle) * 120;
+        const y = 150 + Math.sin(angle) * 120;
+        const numberEl = document.createElement('div');
+        numberEl.classList.add('number');
+        numberEl.style.left = `${x - 20}px`;
+        numberEl.style.top = `${y - 20}px`;
+        numberEl.innerText = i;
+        clock.appendChild(numberEl);
+      }
+    }
+
+    function updateHand(type, angle) {
+      if (type === 'hour') {
+        if (hourHand) hourHand.remove();
+        hourHand = document.createElement('div');
+        hourHand.className = 'hand hour-hand';
+        hourHand.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
+        clock.appendChild(hourHand);
+      } else {
+        if (minuteHand) minuteHand.remove();
+        minuteHand = document.createElement('div');
+        minuteHand.className = 'hand minute-hand';
+        minuteHand.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
+        clock.appendChild(minuteHand);
+      }
+    }
+
+    function setRandomTime() {
+      const level = parseInt(levelSelect.value);
+      const hour = Math.floor(Math.random() * 12) + 1;
+      let minute = 0;
+
+      if (level === 1) {
+        minute = 0;
+      } else if (level === 2) {
+        minute = 30;
+      } else {
+        const choices = [0, 15, 30, 45];
+        minute = choices[Math.floor(Math.random() * choices.length)];
+      }
+
+      targetHour = hour;
+      targetMinute = minute;
+
+      const hourAngle = ((hour % 12) + minute / 60) * 30;
+      const minuteAngle = minute * 6;
+
+      updateHand('hour', hourAngle);
+      updateHand('minute', minuteAngle);
+    }
+
+    function checkGuess() {
+      const guessHour = parseInt(hourInput.value);
+      const guessMinute = parseInt(minuteInput.value);
+
+      if (guessHour === targetHour && guessMinute === targetMinute) {
+        clock.style.background = '#b2f7b2';
+        message.textContent = '✅ Correct!';
+      } else {
+        clock.style.background = '#f7b2b2';
+        message.textContent = `❌ Wrong! It was ${String(targetHour).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')}`;
+      }
+
+      setTimeout(() => {
+        clock.style.background = 'white';
+        message.textContent = '';
+        setRandomTime();
+        hourInput.value = '';
+        minuteInput.value = '';
+      }, 2000);
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      playBtn.textContent = isPlaying ? 'STOP' : 'PLAY';
+      playBtn.classList.toggle('active', isPlaying);
+
+      if (isPlaying) {
+        setRandomTime();
+        clock.style.background = 'white';
+        hourInput.disabled = false;
+        minuteInput.disabled = false;
+        checkBtn.disabled = false;
+        message.textContent = '';
+        hourInput.value = '';
+        minuteInput.value = '';
+      } else {
+        if (hourHand) hourHand.remove();
+        if (minuteHand) minuteHand.remove();
+        hourInput.disabled = true;
+        minuteInput.disabled = true;
+        checkBtn.disabled = true;
+        message.textContent = '';
+        clock.style.background = 'white';
+      }
+    }
+
+    createClockFace();
+  </script>
+</body>
+</html>
