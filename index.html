@@ -212,10 +212,10 @@
 
       if (guessHour === targetHour && guessMinute === targetMinute) {
         clock.style.background = '#b2f7b2';
-        message.textContent = '✅ Correct!';
+        message.textContent = '✅ Doğru!';
       } else {
         clock.style.background = '#f7b2b2';
-        message.textContent = `❌ Wrong! It was ${String(targetHour).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')}`;
+        message.textContent = `❌ Yanlış! It was ${String(targetHour).padStart(2, '0')}:${String(targetMinute).padStart(2, '0')}`;
       }
 
       setTimeout(() => {
